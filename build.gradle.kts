@@ -24,3 +24,7 @@ dependencies {
     implementation("androidx.core:core-ktx:${LibraryVersions.ANDROIDX_CORE}")
     implementation(project(":vkryl:core"))
 }
+
+android {
+  namespace = "me.vkryl.android"
+}
