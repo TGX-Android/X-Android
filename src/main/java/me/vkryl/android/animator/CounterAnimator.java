@@ -123,6 +123,10 @@ public class CounterAnimator <T extends CounterAnimator.TextDrawable> implements
     return animator.getMetadata().getTotalWidth();
   }
 
+  public float getTargetWidth () {
+    return animator.getMetadata().getTargetWidth();
+  }
+
   public void setCounter (long count, String textRepresentation, boolean animated) {
     setCounterImpl(count, toParts(textRepresentation), animated);
   }

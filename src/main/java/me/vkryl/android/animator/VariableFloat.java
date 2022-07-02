@@ -33,6 +33,14 @@ public class VariableFloat {
     return now;
   }
 
+  public float getTo () {
+    return to;
+  }
+
+  public float getFrom () {
+    return from;
+  }
+
   public void setFrom (float from) {
     this.from = from;
   }

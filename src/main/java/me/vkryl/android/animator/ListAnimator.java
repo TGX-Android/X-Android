@@ -133,10 +133,14 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
     }
   }
 
+  public static final int GET_CORDS_FROM_SPACING = 0;
+  public static final int GET_CORDS_FROM_CORDS = 1;
   public interface Measurable {
     default int getSpacingStart (boolean isFirst) { return 0; }
     default int getSpacingEnd (boolean isLast) { return 0; }
-
+    default int getX () { return 0; };
+    default int getY () { return 0; }
+    default int getCordsMethod () { return GET_CORDS_FROM_SPACING; }
     int getWidth ();
     int getHeight ();
   }
@@ -151,6 +155,7 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
     private final VariableFloat maxItemWidth = new VariableFloat(0f);
     private final VariableFloat maxItemHeight = new VariableFloat(0f);
     private final VariableFloat totalWidth = new VariableFloat(0f);
+    private final VariableFloat lastLineWidth = new VariableFloat(0f);
     private final VariableFloat totalHeight = new VariableFloat(0f);
 
     private Metadata () { }
@@ -161,6 +166,7 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       haveChanges = maxItemWidth.applyAnimation(factor) || haveChanges;
       haveChanges = maxItemHeight.applyAnimation(factor) || haveChanges;
       haveChanges = totalWidth.applyAnimation(factor) || haveChanges;
+      haveChanges = lastLineWidth.applyAnimation(factor) || haveChanges;
       haveChanges = totalHeight.applyAnimation(factor) || haveChanges;
       haveChanges = visibility.applyAnimation(factor) || haveChanges;
       return haveChanges;
@@ -171,6 +177,7 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       maxItemWidth.finishAnimation(applyFuture);
       maxItemHeight.finishAnimation(applyFuture);
       totalWidth.finishAnimation(applyFuture);
+      lastLineWidth.finishAnimation(applyFuture);
       totalHeight.finishAnimation(applyFuture);
       visibility.finishAnimation(applyFuture);
     }
@@ -195,6 +202,26 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
 
     public float getTotalWidth () {
       return totalWidth.get();
+    }
+
+    public float getLastLineWidth () {
+      return lastLineWidth.get();
+    }
+
+    public float getTargetWidth () {
+      return totalWidth.getTo();
+    }
+
+    public float getPreviousTotalHeight () {
+      return totalHeight.getFrom();
+    }
+
+    public float getPreviousTotalWidth () {
+      return totalWidth.getFrom();
+    }
+
+    public float getPreviousLastLineWidth () {
+      return lastLineWidth.getFrom();
     }
 
     public float getTotalHeight () {
@@ -364,6 +391,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
   public void measureImpl (boolean animated) {
     int totalWidth = 0, totalHeight = 0;
     int maxItemWidth = 0, maxItemHeight = 0;
+    int maxTop = -1;
+    int lastLineWidth = 0;
     for (Entry<T> entry : actualList) {
       if (entry.item instanceof Measurable) {
         Measurable measurable = (Measurable) entry.item;
@@ -377,26 +406,43 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
         int itemWidth = measurable.getWidth();
         int itemHeight = measurable.getHeight();
 
-        int left = totalWidth;
-        int top = totalHeight;
+        int left = measurable.getCordsMethod() == GET_CORDS_FROM_CORDS ? measurable.getX() : totalWidth;
+        int top = measurable.getCordsMethod() == GET_CORDS_FROM_CORDS ? measurable.getY() : totalHeight;
 
         int width = spacingStart + itemWidth + spacingEnd;
         int height = spacingStart + itemHeight + spacingEnd;
+        int right, bottom;
 
-        totalWidth += width;
-        totalHeight += height;
+        if (measurable.getCordsMethod() == GET_CORDS_FROM_CORDS) {
+          right = left + width;
+          bottom = top + height;
+          totalWidth = Math.max(totalWidth, right);
+          totalHeight = Math.max(totalHeight, bottom);
+        } else {
+          totalWidth += width;
+          totalHeight += height;
+          right = totalWidth;
+          bottom = totalHeight;
+        }
+
+        if (top == maxTop) {
+          lastLineWidth = Math.max(lastLineWidth, right);
+        } else if (top > maxTop) {
+          lastLineWidth = width;
+          maxTop = top;
+        }
 
         if (animated && entry.getVisibility() > 0f) {
-          if (entry.measuredPositionRect.differs(left, top, totalWidth, totalHeight)) {
+          if (entry.measuredPositionRect.differs(left, top, right, bottom)) {
             onBeforeListChanged();
-            entry.measuredPositionRect.setTo(left, top, totalWidth, totalHeight);
+            entry.measuredPositionRect.setTo(left, top, right, bottom);
           }
           if (entry.measuredSpacingStart.differs(spacingStart)) {
             onBeforeListChanged();
             entry.measuredSpacingStart.setTo(spacingStart);
           }
         } else {
-          entry.measuredPositionRect.set(left, top, totalWidth, totalHeight);
+          entry.measuredPositionRect.set(left, top, right, bottom);
           entry.measuredSpacingStart.set(spacingStart);
         }
 
@@ -424,6 +470,10 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
         onBeforeListChanged();
         metadata.totalWidth.setTo(totalWidth);
       }
+      if (metadata.lastLineWidth.differs(lastLineWidth)) {
+        onBeforeListChanged();
+        metadata.lastLineWidth.setTo(lastLineWidth);
+      }
       if (metadata.totalHeight.differs(totalHeight)) {
         onBeforeListChanged();
         metadata.totalHeight.setTo(totalHeight);
@@ -438,6 +488,7 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       }
     } else {
       metadata.totalWidth.set(totalWidth);
+      metadata.lastLineWidth.set(lastLineWidth);
       metadata.totalHeight.set(totalHeight);
       metadata.maxItemWidth.set(maxItemWidth);
       metadata.maxItemHeight.set(maxItemHeight);
