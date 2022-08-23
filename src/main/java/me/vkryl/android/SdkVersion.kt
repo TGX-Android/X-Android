@@ -41,9 +41,11 @@ import android.os.Build
     Build.VERSION_CODES.O -> "Oreo"
     Build.VERSION_CODES.O_MR1 -> "Oreo MR1"
     Build.VERSION_CODES.P -> "Pie"
-    Build.VERSION_CODES.Q -> "Q"
-    Build.VERSION_CODES.R -> "R"
-    Build.VERSION_CODES.S -> "S"
+    Build.VERSION_CODES.Q -> "10"
+    Build.VERSION_CODES.R -> "11"
+    Build.VERSION_CODES.S -> "12"
+    Build.VERSION_CODES.S_V2 -> "12L"
+    33 -> "13"
     Build.VERSION_CODES.CUR_DEVELOPMENT -> "Magic Version"
     else -> "Unknown"
   }
@@ -72,6 +74,8 @@ fun getPrettyVersionCode (apiLevel: Int): String {
     Build.VERSION_CODES.Q -> "10"
     Build.VERSION_CODES.R -> "11"
     Build.VERSION_CODES.S -> "12"
+    Build.VERSION_CODES.S_V2 -> "12L"
+    33 -> "13"
     Build.VERSION_CODES.CUR_DEVELOPMENT -> "Magic Version"
     else -> "Unknown"
   }
