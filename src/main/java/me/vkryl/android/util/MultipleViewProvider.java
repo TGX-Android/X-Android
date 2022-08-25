@@ -33,9 +33,6 @@ import me.vkryl.android.ViewUtils;
 import me.vkryl.core.reference.ReferenceList;
 
 public class MultipleViewProvider implements ViewProvider {
-  public interface InvalidateContentProvider {
-    void invalidateContent ();
-  }
 
   private static final int ACTION_INVALIDATE_ALL = 0;
   private static final int ACTION_REQUEST_LAYOUT = 1;

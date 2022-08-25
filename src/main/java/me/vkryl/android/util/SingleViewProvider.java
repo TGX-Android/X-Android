@@ -148,6 +148,11 @@ public class SingleViewProvider implements ViewProvider {
 
   @Override
   public boolean invalidateContent () {
+    View view = findAnyTarget();
+    if (view instanceof InvalidateContentProvider) {
+      ((InvalidateContentProvider) view).invalidateContent();
+      return true;
+    }
     return false;
   }
 }
