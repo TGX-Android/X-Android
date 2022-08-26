@@ -192,11 +192,17 @@ public class MultipleViewProvider implements ViewProvider {
   }
 
   @Override
-  public boolean invalidateContent () {
+  public boolean invalidateContent (Object cause) {
     if (contentProvider != null) {
-      contentProvider.invalidateContent();
-      return true;
+      return contentProvider.invalidateContent(cause);
+    } else {
+      boolean success = false;
+      for (View view : views) {
+        if (view instanceof InvalidateContentProvider && ((InvalidateContentProvider) view).invalidateContent(cause)) {
+          success = true;
+        }
+      }
+      return success;
     }
-    return false;
   }
 }

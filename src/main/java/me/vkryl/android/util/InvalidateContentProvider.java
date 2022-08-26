@@ -20,5 +20,5 @@
 package me.vkryl.android.util;
 
 public interface InvalidateContentProvider {
-  void invalidateContent ();
+  boolean invalidateContent (Object cause);
 }

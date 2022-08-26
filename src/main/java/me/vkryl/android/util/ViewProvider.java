@@ -22,7 +22,7 @@ package me.vkryl.android.util;
 import android.graphics.Rect;
 import android.view.View;
 
-public interface ViewProvider extends InvalidateDelegate, LayoutDelegate {
+public interface ViewProvider extends InvalidateDelegate, LayoutDelegate, InvalidateContentProvider {
   boolean hasAnyTargetToInvalidate ();
   void invalidate ();
   void invalidate (int left, int top, int right, int bottom);
@@ -37,5 +37,4 @@ public interface ViewProvider extends InvalidateDelegate, LayoutDelegate {
   void invalidateOutline (boolean withView);
   int getMeasuredWidth ();
   int getMeasuredHeight ();
-  boolean invalidateContent ();
 }
