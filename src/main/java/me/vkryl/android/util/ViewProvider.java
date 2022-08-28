@@ -20,21 +20,116 @@
 package me.vkryl.android.util;
 
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.View;
+import android.view.ViewParent;
 
-public interface ViewProvider extends InvalidateDelegate, LayoutDelegate, InvalidateContentProvider {
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import me.vkryl.android.ViewUtils;
+import me.vkryl.core.lambda.RunnableData;
+
+public interface ViewProvider extends InvalidateDelegate, LayoutDelegate, InvalidateContentProvider, Iterable<View> {
   boolean hasAnyTargetToInvalidate ();
-  void invalidate ();
-  void invalidate (int left, int top, int right, int bottom);
-  void invalidate (Rect dirty);
-  View findAnyTarget ();
-  boolean belongsToProvider (View view);
-  void postInvalidate ();
-  void invalidateParent ();
-  void invalidateParent (int left, int top, int right, int bottom);
-  void performClickSoundFeedback ();
-  void requestLayout ();
-  void invalidateOutline (boolean withView);
-  int getMeasuredWidth ();
-  int getMeasuredHeight ();
+
+  @Nullable
+  default View findAnyTarget () {
+    for (View view : this) {
+      if (view != null) {
+        return view;
+      }
+    }
+    return null;
+  }
+
+  default void performWithViews (@NonNull RunnableData<View> callback) {
+    for (View view : this) {
+      if (view != null) {
+        callback.runWithData(view);
+      }
+    }
+  }
+
+  default boolean belongsToProvider (View childView) {
+    for (View view : this) {
+      if (view == childView)
+        return true;
+    }
+    return false;
+  }
+
+  default int getMeasuredWidth () {
+    View view = findAnyTarget();
+    return view != null ? view.getMeasuredWidth() : 0;
+  }
+  default int getMeasuredHeight () {
+    View view = findAnyTarget();
+    return view != null ? view.getMeasuredHeight() : 0;
+  }
+
+  default void requestLayout () {
+    performWithViews(View::requestLayout);
+  }
+
+  default void postInvalidate () {
+    performWithViews(View::postInvalidate);
+  }
+
+  default void invalidate () {
+    performWithViews(View::invalidate);
+  }
+  default void invalidate (int left, int top, int right, int bottom) {
+    performWithViews(view ->
+      view.invalidate(left, top, right, bottom)
+    );
+  }
+  default void invalidate (Rect dirty) {
+    performWithViews(view ->
+      view.invalidate(dirty)
+    );
+  }
+
+  default void invalidateOutline (boolean invalidate) {
+    performWithViews(view -> {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        view.invalidateOutline();
+      }
+      if (invalidate) {
+        view.invalidate();
+      }
+    });
+  }
+
+  default void invalidateParent () {
+    performWithViews(view -> {
+      ViewParent parent = view.getParent();
+      if (parent instanceof View) {
+        ((View) parent).invalidate();
+      }
+    });
+  }
+  default void invalidateParent (int left, int top, int right, int bottom) {
+    performWithViews(view -> {
+      ViewParent parent = view.getParent();
+      if (parent instanceof View) {
+        ((View) parent).invalidate(left, top, right, bottom);
+      }
+    });
+  }
+
+  default void performClickSoundFeedback () {
+    ViewUtils.onClick(findAnyTarget());
+  }
+
+  @Override
+  default boolean invalidateContent (Object cause) {
+    int successCount = 0;
+    for (View view : this) {
+      if (view instanceof InvalidateContentProvider && ((InvalidateContentProvider) view).invalidateContent(cause)) {
+        successCount++;
+      }
+    }
+    return successCount > 0;
+  }
 }

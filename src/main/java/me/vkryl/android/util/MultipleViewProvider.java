@@ -19,17 +19,15 @@
 
 package me.vkryl.android.util;
 
-import android.graphics.Rect;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.ViewParent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import me.vkryl.android.ViewUtils;
+import java.util.Iterator;
+
 import me.vkryl.core.reference.ReferenceList;
 
 public class MultipleViewProvider implements ViewProvider {
@@ -77,75 +75,10 @@ public class MultipleViewProvider implements ViewProvider {
     views.clear();
   }
 
+  @NonNull
   @Override
-  public void invalidateParent (int left, int top, int right, int bottom) {
-    for (View view : views) {
-      ViewParent parent = view.getParent();
-      if (parent != null) {
-        ((View) parent).invalidate(left, top, right, bottom);
-      }
-    }
-  }
-
-  @Override
-  public void invalidateParent () {
-    for (View view : views) {
-      ViewParent parent = view.getParent();
-      if (parent != null) {
-        ((View) parent).invalidate();
-      }
-    }
-  }
-
-  @Override
-  public void invalidate () {
-    for (View view : views) {
-      view.invalidate();
-    }
-  }
-
-  @Override
-  public void invalidateOutline (boolean withInvalidate) {
-    for (View view : views) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        view.invalidateOutline();
-      }
-      if (withInvalidate) {
-        view.invalidate();
-      }
-    }
-  }
-
-  @Override
-  public void invalidate (int left, int top, int right, int bottom) {
-    for (View view : views) {
-      view.invalidate(left, top, right, bottom);
-    }
-  }
-
-  @Override
-  public void invalidate (Rect dirty) {
-    for (View view : views) {
-      view.invalidate(dirty);
-    }
-  }
-
-  @Override
-  public boolean belongsToProvider (View childView) {
-    for (View view : views) {
-      if (view == childView) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @Override
-  public @Nullable View findAnyTarget () {
-    for (View view : views) {
-      return view;
-    }
-    return null;
+  public Iterator<View> iterator () {
+    return views.iterator();
   }
 
   @Override
@@ -159,18 +92,10 @@ public class MultipleViewProvider implements ViewProvider {
   }
 
   @Override
-  public void performClickSoundFeedback () {
-    View view = findAnyTarget();
-    if (view != null) {
-      ViewUtils.onClick(view);
-    }
-  }
-
-  @Override
   public void requestLayout () {
     // FIXME: better thread safety
     final boolean isBackground = Looper.myLooper() != Looper.getMainLooper();
-    for (View view : views) {
+    for (View view : this) {
       if (isBackground) {
         handler.sendMessage(handler.obtainMessage(ACTION_REQUEST_LAYOUT, view));
       } else {
@@ -180,24 +105,12 @@ public class MultipleViewProvider implements ViewProvider {
   }
 
   @Override
-  public int getMeasuredWidth () {
-    View view = findAnyTarget();
-    return view != null ? view.getMeasuredWidth() : 0;
-  }
-
-  @Override
-  public int getMeasuredHeight () {
-    View view = findAnyTarget();
-    return view != null ? view.getMeasuredHeight() : 0;
-  }
-
-  @Override
   public boolean invalidateContent (Object cause) {
     if (contentProvider != null) {
       return contentProvider.invalidateContent(cause);
     } else {
       boolean success = false;
-      for (View view : views) {
+      for (View view : this) {
         if (view instanceof InvalidateContentProvider && ((InvalidateContentProvider) view).invalidateContent(cause)) {
           success = true;
         }

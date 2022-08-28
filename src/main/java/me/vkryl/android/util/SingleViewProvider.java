@@ -19,14 +19,13 @@
 
 package me.vkryl.android.util;
 
-import android.graphics.Rect;
-import android.os.Build;
 import android.view.View;
-import android.view.ViewParent;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import me.vkryl.android.ViewUtils;
+import java.util.Collections;
+import java.util.Iterator;
 
 public class SingleViewProvider implements ViewProvider {
   private @Nullable View view;
@@ -40,8 +39,8 @@ public class SingleViewProvider implements ViewProvider {
   }
 
   @Override
-  public @Nullable View findAnyTarget () {
-    return view;
+  public boolean hasAnyTargetToInvalidate () {
+    return findAnyTarget() != null;
   }
 
   @Override
@@ -50,109 +49,18 @@ public class SingleViewProvider implements ViewProvider {
   }
 
   @Override
-  public boolean hasAnyTargetToInvalidate () {
-    return findAnyTarget() != null;
+  public @Nullable View findAnyTarget () {
+    return view;
   }
 
+  @NonNull
   @Override
-  public void invalidate () {
+  public Iterator<View> iterator () {
     View view = findAnyTarget();
     if (view != null) {
-      view.invalidate();
-    }
-  }
-
-  @Override
-  public void invalidateParent () {
-    View view = findAnyTarget();
-    if (view != null) {
-      ViewParent parent = view.getParent();
-      if (parent != null) {
-        ((View) parent).invalidate();
-      }
-    }
-  }
-
-  @Override
-  public void invalidateParent (int left, int top, int right, int bottom) {
-    View view = findAnyTarget();
-    if (view != null) {
-      ViewParent parent = view.getParent();
-      if (parent != null) {
-        ((View) parent).invalidate(left, top, right, bottom);
-      }
-    }
-  }
-
-  @Override
-  public void invalidate (int left, int top, int right, int bottom) {
-    View view = findAnyTarget();
-    if (view != null) {
-      view.invalidate(left, top, right, bottom);
-    }
-  }
-
-  @Override
-  public void invalidate (Rect dirty) {
-    View view = findAnyTarget();
-    if (view != null) {
-      view.invalidate(dirty);
-    }
-  }
-
-  @Override
-  public void invalidateOutline (boolean withInvalidate) {
-    View view = findAnyTarget();
-    if (view != null) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        view.invalidateOutline();
-      }
-      if (withInvalidate) {
-        view.invalidate();
-      }
-    }
-  }
-
-  @Override
-  public void postInvalidate () {
-    View view = findAnyTarget();
-    if (view != null) {
-      view.postInvalidate();
-    }
-  }
-
-  @Override
-  public void performClickSoundFeedback () {
-    ViewUtils.onClick(findAnyTarget());
-  }
-
-  @Override
-  public void requestLayout () {
-    View view = findAnyTarget();
-    if (view != null) {
-      view.requestLayout();
-    }
-  }
-
-  @Override
-  public int getMeasuredWidth () {
-    View view = findAnyTarget();
-    return view != null ? view.getMeasuredWidth() : 0;
-  }
-
-  @Override
-  public int getMeasuredHeight () {
-    View view = findAnyTarget();
-    return view != null ? view.getMeasuredHeight() : 0;
-  }
-
-  @Override
-  public boolean invalidateContent (Object cause) {
-    View view = findAnyTarget();
-    if (view instanceof InvalidateContentProvider) {
-      return ((InvalidateContentProvider) view).invalidateContent(cause);
+      return Collections.singleton(view).iterator();
     } else {
-      return false;
+      return Collections.emptyIterator();
     }
   }
 }
