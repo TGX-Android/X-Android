@@ -608,4 +608,39 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
 
     onApplyListChanges();
   }
+
+  public static class MeasurableEntry<T extends Measurable> implements Measurable, Destroyable {
+    public final T content;
+
+    protected MeasurableEntry (T content) {
+      this.content = content;
+    }
+
+    @Override
+    public final int getSpacingStart (boolean isFirst) {
+      return content.getSpacingStart(isFirst);
+    }
+
+    @Override
+    public final int getSpacingEnd (boolean isLast) {
+      return content.getSpacingEnd(isLast);
+    }
+
+    @Override
+    public final int getWidth () {
+      return content.getWidth();
+    }
+
+    @Override
+    public final int getHeight () {
+      return content.getHeight();
+    }
+
+    @Override
+    public void performDestroy () {
+      if (content instanceof Destroyable) {
+        ((Destroyable) content).performDestroy();
+      }
+    }
+  }
 }
