@@ -95,7 +95,10 @@ public class HtmlEncoder {
     for (int i = start; i < end; i++) {
       char c = text.charAt(i);
 
-      if (c == '<') {
+      if (c == '\n') {
+        // modified: treat all new lines as <br/> tag
+        out.append("<br/>");
+      } else if (c == '<') {
         out.append("&lt;");
       } else if (c == '>') {
         out.append("&gt;");
