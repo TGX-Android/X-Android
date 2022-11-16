@@ -25,6 +25,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AnticipateOvershootInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
 
@@ -39,6 +40,9 @@ public final class AnimatorUtils {
   public static final LinearInterpolator LINEAR_INTERPOLATOR = new LinearInterpolator();
   public static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator(3.2f);
   public static final AccelerateDecelerateInterpolator ACCELERATE_DECELERATE_INTERPOLATOR = new AccelerateDecelerateInterpolator();
+
+  public static final Interpolator QUADRATIC_EASE_IN_OUT_INTERPOLATOR = time ->
+    time < 0.5f ? 2.0f * time * time : -1.0f + (4.0f - 2.0f * time) * time;
 
   public static ValueAnimator simpleValueAnimator () {
     return ValueAnimator.ofFloat(0f, 1f);
