@@ -43,6 +43,7 @@ public final class AnimatorUtils {
 
   public static final Interpolator QUADRATIC_EASE_IN_OUT_INTERPOLATOR = time ->
     time < 0.5f ? 2.0f * time * time : -1.0f + (4.0f - 2.0f * time) * time;
+  public static final Interpolator QUADRATIC_OUT_INTERPOLATOR = input -> 1f - (1f - input) * (1f - input);
 
   public static ValueAnimator simpleValueAnimator () {
     return ValueAnimator.ofFloat(0f, 1f);
