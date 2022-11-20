@@ -40,11 +40,11 @@ public class CounterAnimator <T extends CounterAnimator.TextDrawable> implements
   }
 
   public static class Part<T extends TextDrawable> implements ListAnimator.Measurable, Animatable {
-    private final int index;
+    protected final int index;
     public final T text;
 
-    private final VariableFloat verticalPosition = new VariableFloat(POSITION_NORMAL); // 0f = center, -1f = top, 1f = bottom
-    private int position = POSITION_NORMAL;
+    protected final VariableFloat verticalPosition = new VariableFloat(POSITION_NORMAL); // 0f = center, -1f = top, 1f = bottom
+    protected int position = POSITION_NORMAL;
 
     public static final int POSITION_UP = -1;
     public static final int POSITION_NORMAL = 0;
