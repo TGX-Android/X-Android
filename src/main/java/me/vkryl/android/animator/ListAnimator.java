@@ -405,12 +405,24 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       }
     }
 
+    boolean haveChanges = false;
+    if (animated) {
+      for (Entry<T> entry : entries) {
+        if (entry.item instanceof Animatable && ((Animatable) entry.item).hasChanges()) {
+          haveChanges = true;
+          break;
+        }
+      }
+    }
+    if (haveChanges) {
+      onBeforeListChanged();
+    }
+
     for (Entry<T> entry : entries) {
       if (entry.item instanceof Animatable) {
         Animatable animatable = (Animatable) entry.item;
         if (animated) {
           if (animatable.hasChanges()) {
-            onBeforeListChanged();
             animatable.prepareChanges();
           }
         } else {
