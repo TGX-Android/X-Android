@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
+import me.vkryl.android.BuildConfig;
 import me.vkryl.android.animator.Animated;
 
 public class FrameLayoutFix extends android.widget.FrameLayout implements Animated {
@@ -223,6 +224,8 @@ public class FrameLayoutFix extends android.widget.FrameLayout implements Animat
     } catch (NullPointerException e) {
       // for some reason getChildAt(i) returned null, therefore exception occurred
       e.printStackTrace();
+      if (BuildConfig.DEBUG)
+        throw e;
     }
     if (pendingAction != null) {
       pendingAction.run();
