@@ -112,7 +112,7 @@ public class FactorAnimator {
     return objValue;
   }
 
-  public void cancel () {
+  public boolean cancel () {
     if (isAnimating) {
       if (Looper.myLooper() != Looper.getMainLooper())
         throw new AssertionError();
@@ -121,7 +121,9 @@ public class FactorAnimator {
         animator.cancel();
         animator = null;
       }
+      return true;
     }
+    return false;
   }
 
   public void setStartRunnable (Runnable runnable) {
@@ -254,24 +256,19 @@ public class FactorAnimator {
     return isAnimating;
   }
 
-  private void setFactor (float factor, float fraction) {
+  private boolean setFactor (float factor, float fraction) {
     if (this.factor != factor) {
       this.factor = factor;
       target.onFactorChanged(id, factor, fraction, this);
+      return true;
     }
+    return false;
   }
 
   public void forceFactor (float factor) {
-    forceFactor(factor, false);
-  }
-
-  public void forceFactor (float factor, boolean callTarget) {
-    cancel();
-    if (this.factor != factor && callTarget) {
-      this.factor = factor;
+    boolean isCancelled = cancel();
+    if (setFactor(factor, 1f) || isCancelled) {
       target.onFactorChangeFinished(id, factor, this);
-    } else {
-      this.factor = factor;
     }
   }
 }
