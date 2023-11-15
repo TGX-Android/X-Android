@@ -26,7 +26,17 @@ import java.util.Iterator;
 
 public class ReplaceAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
   public interface Callback {
-    void onItemChanged (ReplaceAnimator animator);
+    void onItemChanged (ReplaceAnimator<?> animator);
+
+    default boolean hasChanges (ReplaceAnimator<?> animator) {
+      return false;
+    }
+    default void onForceApplyChanges (ReplaceAnimator<?> animator) { }
+    default void onPrepareMetadataAnimation (ReplaceAnimator<?> animator) { }
+    default boolean onApplyMetadataAnimation (ReplaceAnimator<?> animator, float factor) {
+      return false;
+    }
+    default void onFinishMetadataAnimation (ReplaceAnimator<?> animator, boolean applyFuture) { }
   }
 
   private final ListAnimator<T> list;
@@ -36,8 +46,36 @@ public class ReplaceAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
   }
 
   public ReplaceAnimator (@NonNull Callback callback, Interpolator interpolator, long duration) {
-    this.list = new ListAnimator<>(list -> {
-      callback.onItemChanged(this);
+    this.list = new ListAnimator<>(new ListAnimator.Callback() {
+      @Override
+      public void onItemsChanged (ListAnimator<?> animator) {
+        callback.onItemChanged(ReplaceAnimator.this);
+      }
+
+      @Override
+      public boolean hasChanges (ListAnimator<?> animator) {
+        return callback.hasChanges(ReplaceAnimator.this);
+      }
+
+      @Override
+      public void onForceApplyChanges (ListAnimator<?> animator) {
+        callback.onForceApplyChanges(ReplaceAnimator.this);
+      }
+
+      @Override
+      public void onPrepareMetadataAnimation (ListAnimator<?> animator) {
+        callback.onPrepareMetadataAnimation(ReplaceAnimator.this);
+      }
+
+      @Override
+      public boolean onApplyMetadataAnimation (ListAnimator<?> animator, float factor) {
+        return callback.onApplyMetadataAnimation(ReplaceAnimator.this, factor);
+      }
+
+      @Override
+      public void onFinishMetadataAnimation (ListAnimator<?> animator, boolean applyFuture) {
+        callback.onFinishMetadataAnimation(ReplaceAnimator.this, applyFuture);
+      }
     }, interpolator, duration);
   }
 

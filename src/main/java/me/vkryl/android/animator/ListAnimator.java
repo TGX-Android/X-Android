@@ -141,19 +141,37 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
     int getHeight ();
   }
 
-  public interface Callback {
+  public interface MetadataCallback {
+    default boolean hasChanges (ListAnimator<?> animator) {
+      return false;
+    }
+    default void onForceApplyChanges (ListAnimator<?> animator) { }
+    default void onPrepareMetadataAnimation (ListAnimator<?> animator) { }
+    default boolean onApplyMetadataAnimation (ListAnimator<?> animator, float factor) {
+      return false;
+    }
+    default void onFinishMetadataAnimation (ListAnimator<?> animator, boolean applyFuture) { }
+  }
+
+  public interface Callback extends MetadataCallback {
     void onItemsChanged (ListAnimator<?> animator);
   }
 
   public static class Metadata {
+    private final ListAnimator<?> context;
+    private final MetadataCallback metadataCallback;
+
     private final VariableFloat size = new VariableFloat(0);
-    private final VariableFloat visibility = new VariableFloat(0);
+    private final VariableFloat totalVisibility = new VariableFloat(0);
     private final VariableFloat maxItemWidth = new VariableFloat(0f);
     private final VariableFloat maxItemHeight = new VariableFloat(0f);
     private final VariableFloat totalWidth = new VariableFloat(0f);
     private final VariableFloat totalHeight = new VariableFloat(0f);
 
-    private Metadata () { }
+    private Metadata (ListAnimator<?> context, @NonNull MetadataCallback metadataCallback) {
+      this.context = context;
+      this.metadataCallback = metadataCallback;
+    }
 
     public boolean applyAnimation (float factor) {
       boolean haveChanges;
@@ -162,7 +180,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       haveChanges = maxItemHeight.applyAnimation(factor) || haveChanges;
       haveChanges = totalWidth.applyAnimation(factor) || haveChanges;
       haveChanges = totalHeight.applyAnimation(factor) || haveChanges;
-      haveChanges = visibility.applyAnimation(factor) || haveChanges;
+      haveChanges = totalVisibility.applyAnimation(factor) || haveChanges;
+      haveChanges = metadataCallback.onApplyMetadataAnimation(context, factor) || haveChanges;
       return haveChanges;
     }
 
@@ -172,16 +191,17 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       maxItemHeight.finishAnimation(applyFuture);
       totalWidth.finishAnimation(applyFuture);
       totalHeight.finishAnimation(applyFuture);
-      visibility.finishAnimation(applyFuture);
+      totalVisibility.finishAnimation(applyFuture);
+      metadataCallback.onFinishMetadataAnimation(context, applyFuture);
     }
 
     private void setSize (int size, boolean animated) {
       if (animated) {
         this.size.setTo(size);
-        this.visibility.setTo(size > 0 ? 1.0f : 0.0f);
+        this.totalVisibility.setTo(size > 0 ? 1.0f : 0.0f);
       } else {
         this.size.set(size);
-        this.visibility.set(size > 0 ? 1.0f : 0.0f);
+        this.totalVisibility.set(size > 0 ? 1.0f : 0.0f);
       }
     }
 
@@ -205,8 +225,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       return size.get();
     }
 
-    public float getVisibility () {
-      return visibility.get();
+    public float getTotalVisibility () {
+      return totalVisibility.get();
     }
   }
 
@@ -226,7 +246,7 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
 
   public ListAnimator (@NonNull Callback callback, @Nullable Interpolator interpolator, long duration) {
     this.callback = callback;
-    this.metadata = new Metadata();
+    this.metadata = new Metadata(this, callback);
     this.entries = new ArrayList<>();
     this.actualList = new ArrayList<>();
     if (interpolator != null && duration > 0) {
@@ -448,11 +468,16 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
         onBeforeListChanged();
         metadata.maxItemHeight.setTo(maxItemHeight);
       }
+      if (metadata.metadataCallback.hasChanges(this)) {
+        onBeforeListChanged();
+        metadata.metadataCallback.onPrepareMetadataAnimation(this);
+      }
     } else {
       metadata.totalWidth.set(totalWidth);
       metadata.totalHeight.set(totalHeight);
       metadata.maxItemWidth.set(maxItemWidth);
       metadata.maxItemHeight.set(maxItemHeight);
+      metadata.metadataCallback.onForceApplyChanges(this);
     }
   }
 
