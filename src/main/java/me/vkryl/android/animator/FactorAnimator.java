@@ -22,6 +22,7 @@ package me.vkryl.android.animator;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
@@ -31,6 +32,7 @@ import androidx.annotation.FloatRange;
 import androidx.annotation.Nullable;
 
 import me.vkryl.android.AnimatorUtils;
+import me.vkryl.android.BuildConfig;
 import me.vkryl.core.BitwiseUtils;
 
 public class FactorAnimator {
@@ -183,9 +185,9 @@ public class FactorAnimator {
 
     if (isBlocked) {
       this.factor = toFactor;
+      invokeStartRunnable();
       target.onFactorChanged(id, factor, 1f, this);
       target.onFactorChangeFinished(id, factor, this);
-      invokeStartRunnable();
       return;
     }
 
@@ -194,10 +196,18 @@ public class FactorAnimator {
     final float fromFactor = factor;
     final float factorDiff = toFactor - fromFactor;
 
+    long duration = this.duration;
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !BuildConfig.DEBUG) {
+      if (!ValueAnimator.areAnimatorsEnabled()) {
+        duration = 0;
+      }
+    }
+
     if (duration <= 0) {
       setFactor(toFactor, 1f);
-      target.onFactorChangeFinished(id, toFactor, this);
       setAnimating(false);
+      target.onFactorChangeFinished(id, toFactor, this);
       return;
     }
 
@@ -218,13 +228,22 @@ public class FactorAnimator {
         invokeStartRunnable();
       }
 
-      @Override
-      public void onAnimationEnd (Animator animation) {
+      private void finishAnimation () {
         if (isAnimating) {
           setFactor(fromFactor + factorDiff, 1f);
           setAnimating(false);
           target.onFactorChangeFinished(id, factor, FactorAnimator.this);
         }
+      }
+
+      @Override
+      public void onAnimationCancel (Animator animation) {
+        finishAnimation();
+      }
+
+      @Override
+      public void onAnimationEnd (Animator animation) {
+        finishAnimation();
       }
     });
     if (startDelay != 0) {
