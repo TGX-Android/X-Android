@@ -32,7 +32,6 @@ import androidx.annotation.FloatRange;
 import androidx.annotation.Nullable;
 
 import me.vkryl.android.AnimatorUtils;
-import me.vkryl.android.BuildConfig;
 import me.vkryl.core.BitwiseUtils;
 
 public class FactorAnimator {
@@ -198,7 +197,7 @@ public class FactorAnimator {
 
     long duration = this.duration;
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !BuildConfig.DEBUG) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       if (!ValueAnimator.areAnimatorsEnabled()) {
         duration = 0;
       }

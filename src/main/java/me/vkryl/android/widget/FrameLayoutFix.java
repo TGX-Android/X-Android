@@ -21,6 +21,7 @@ package me.vkryl.android.widget;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -29,8 +30,8 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
-import me.vkryl.android.BuildConfig;
 import me.vkryl.android.animator.Animated;
+import me.vkryl.core.lambda.RunnableData;
 
 public class FrameLayoutFix extends android.widget.FrameLayout implements Animated {
   public static android.widget.FrameLayout.LayoutParams newParams (int width, int height) {
@@ -222,14 +223,30 @@ public class FrameLayoutFix extends android.widget.FrameLayout implements Animat
     try {
       super.onLayout(changed, left, top, right, bottom);
     } catch (NullPointerException e) {
-      // for some reason getChildAt(i) returned null, therefore exception occurred
-      e.printStackTrace();
-      if (BuildConfig.DEBUG)
-        throw e;
+      handleLayoutException(e);
     }
     if (pendingAction != null) {
       pendingAction.run();
       pendingAction = null;
     }
   }
+
+  @Nullable
+  private RunnableData<RuntimeException> exceptionCallback;
+
+  public void setLayoutExceptionCallback (RunnableData<RuntimeException> callback) {
+    this.exceptionCallback = callback;
+  }
+
+  protected void handleLayoutException (RuntimeException e) {
+    if (exceptionCallback != null) {
+      this.exceptionCallback.runWithData(e);
+    } else {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        throw e;
+      // for some reason getChildAt(i) returned null, therefore exception occurred
+      e.printStackTrace();
+    }
+  }
+
 }
