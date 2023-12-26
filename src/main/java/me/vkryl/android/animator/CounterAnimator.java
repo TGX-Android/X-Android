@@ -22,9 +22,9 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 import me.vkryl.android.AnimatorUtils;
+import me.vkryl.core.ObjectUtils;
 import me.vkryl.core.StringUtils;
 
 public class CounterAnimator <T extends CounterAnimator.TextDrawable> implements Iterable<ListAnimator.Entry<CounterAnimator.Part<T>>> {
@@ -69,7 +69,7 @@ public class CounterAnimator <T extends CounterAnimator.TextDrawable> implements
 
     @Override
     public int hashCode () {
-      return Objects.hash(index, text.getText());
+      return ObjectUtils.hashCode(index, text.getText());
     }
 
     @Override
