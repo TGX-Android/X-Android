@@ -1,6 +1,6 @@
 /*
  * This file is a part of X-Android
- * Copyright © Vyacheslav Krylov (slavone@protonmail.ch) 2014
+ * Copyright © Vyacheslav Krylov 2014
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
