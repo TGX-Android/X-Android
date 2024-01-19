@@ -32,9 +32,9 @@ public final class DeviceUtils {
    *
    * See https://github.com/gingo/android-emulator-detector
    */
-  public static boolean detectEmulator (Activity activity) {
+  public static boolean detectEmulator (Activity activity, boolean allowUnsafe) {
     final Context context = activity.getApplicationContext();
-    return isTestLabDevice(context) || EmulatorDetector.runTests(context);
+    return isTestLabDevice(context) || EmulatorDetector.runTests(context, allowUnsafe);
   }
 
   public static boolean isApplicationInstalled (Context context, String packageName, boolean allowPastInstallations) {

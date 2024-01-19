@@ -39,6 +39,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import me.vkryl.core.ArrayUtils;
@@ -49,19 +50,21 @@ class EmulatorDetector {
     boolean runTest (T data);
   }
 
-  static boolean runTests (Context context) {
-    List<Test<Context>> advancedTests = Arrays.asList(
-      EmulatorDetector::runBasicTests,
+  static boolean runTests (Context context, boolean allowUnsafe) {
+    List<Test<Context>> advancedTests = new ArrayList<>();
+    Collections.addAll(advancedTests, EmulatorDetector::runBasicTests,
       EmulatorDetector::runPackageNameTest,
       EmulatorDetector::runBstTest,
       EmulatorDetector::runTelephonyTests,
       EmulatorDetector::runPopularEmulatorsTest,
       EmulatorDetector::runQemuDriversTest,
       EmulatorDetector::runPipesTest,
-      EmulatorDetector::runIpTest,
       EmulatorDetector::runX86EmulatorTest,
       EmulatorDetector::runEmuInputDevicesTest
     );
+    if (allowUnsafe) {
+      advancedTests.add(EmulatorDetector::runIpTest);
+    }
     for (Test<Context> test : advancedTests) {
       try {
         boolean result = test.runTest(context);
