@@ -54,7 +54,6 @@ class EmulatorDetector {
       EmulatorDetector::runBasicTests,
       EmulatorDetector::runPackageNameTest,
       EmulatorDetector::runBstTest,
-      EmulatorDetector::runOpenGLTest,
       EmulatorDetector::runTelephonyTests,
       EmulatorDetector::runPopularEmulatorsTest,
       EmulatorDetector::runQemuDriversTest,
@@ -190,8 +189,7 @@ class EmulatorDetector {
     // "andy", "nox", "memu", "mumu",
   };
 
-  private static boolean runOpenGLTest (Context context) {
-    String renderer = android.opengl.GLES20.glGetString(android.opengl.GLES20.GL_RENDERER);
+  public static boolean isEmulatedOpenGLRenderer (String renderer) {
     if (StringUtils.isEmpty(renderer)) {
       return false;
     }
