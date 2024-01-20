@@ -28,13 +28,11 @@ public final class DeviceUtils {
 
   /**
    * Detects if app is currently running on emulator, or real device.
-   * @return true for emulator, false for real devices
-   *
-   * See https://github.com/gingo/android-emulator-detector
+   * @return 0 if current device is a real device, non-zero value in other cases
    */
-  public static boolean detectEmulator (Activity activity, boolean allowUnsafe) {
+  public static long detectEmulator (Activity activity, boolean allowUnsafe) {
     final Context context = activity.getApplicationContext();
-    return isTestLabDevice(context) || EmulatorDetector.runTests(context, allowUnsafe);
+    return EmulatorDetector.runTests(context, allowUnsafe);
   }
 
   public static boolean isApplicationInstalled (Context context, String packageName, boolean allowPastInstallations) {

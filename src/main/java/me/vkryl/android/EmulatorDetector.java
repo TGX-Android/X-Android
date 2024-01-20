@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 
 import me.vkryl.core.ArrayUtils;
+import me.vkryl.core.BitwiseUtils;
 import me.vkryl.core.StringUtils;
 
 class EmulatorDetector {
@@ -50,9 +51,13 @@ class EmulatorDetector {
     boolean runTest (T data);
   }
 
-  static boolean runTests (Context context, boolean allowUnsafe) {
+  private static int testDetails;
+
+  static long runTests (Context context, boolean allowUnsafe) {
     List<Test<Context>> advancedTests = new ArrayList<>();
-    Collections.addAll(advancedTests, EmulatorDetector::runBasicTests,
+    Collections.addAll(advancedTests,
+      DeviceUtils::isTestLabDevice,
+      EmulatorDetector::runBasicTests,
       EmulatorDetector::runPackageNameTest,
       EmulatorDetector::runBstTest,
       EmulatorDetector::runTelephonyTests,
@@ -65,15 +70,18 @@ class EmulatorDetector {
     if (allowUnsafe) {
       advancedTests.add(EmulatorDetector::runIpTest);
     }
+    int index = 0;
     for (Test<Context> test : advancedTests) {
+      testDetails = 0;
+      int testId = ++index;
       try {
         boolean result = test.runTest(context);
         if (result) {
-          return true;
+          return BitwiseUtils.mergeLong(testDetails, testId);
         }
       } catch (Throwable ignored) { }
     }
-    return false;
+    return 0;
   }
 
   private static boolean runBasicTests (Context context) {
@@ -221,13 +229,16 @@ class EmulatorDetector {
       EmulatorDetector::testDeviceId,
       EmulatorDetector::testSubscriberId
     );
+    int index = 0;
     for (Test<TelephonyManager> test : tests) {
       try {
         boolean result = test.runTest(telephonyManager);
         if (result) {
+          testDetails = index;
           return true;
         }
       } catch (Throwable ignored) { }
+      index++;
     }
     return false;
   }
@@ -404,15 +415,15 @@ class EmulatorDetector {
       builder.directory(new File("/system/bin/"));
       builder.redirectErrorStream(true);
       Process process = builder.start();
-      InputStream in = process.getInputStream();
-      byte[] re = new byte[1024];
-      int bytesRead;
-      while ((bytesRead = in.read(re)) != -1) {
-        stringBuilder.append(new String(re, 0, bytesRead));
+      try (InputStream in = process.getInputStream()) {
+        byte[] re = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = in.read(re)) != -1) {
+          stringBuilder.append(new String(re, 0, bytesRead));
+        }
       }
-      in.close();
-    } catch (Exception ex) {
-      // empty catch
+    } catch (Throwable t) {
+      t.printStackTrace();
     }
 
     String netData = stringBuilder.toString();
@@ -460,7 +471,7 @@ class EmulatorDetector {
     new Property("ro.serialno", null)
   };
 
-  private static final int MIN_PROPERTIES_THRESHOLD = 0x5;
+  private static final int MIN_PROPERTIES_THRESHOLD = 5;
 
   private static String getSystemProperty (Context context, String property) {
     try {
