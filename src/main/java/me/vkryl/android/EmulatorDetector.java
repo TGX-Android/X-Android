@@ -58,6 +58,7 @@ class EmulatorDetector {
     Collections.addAll(advancedTests,
       DeviceUtils::isTestLabDevice,
       EmulatorDetector::runBasicTests,
+      AppInstallationUtil::isInstalledByEmulatorSoftware,
       EmulatorDetector::runPackageNameTest,
       EmulatorDetector::runBstTest,
       EmulatorDetector::runTelephonyTests,
@@ -154,11 +155,7 @@ class EmulatorDetector {
       rating++;
     }
 
-    if (rating > 3) {
-      return true;
-    }
-
-    return false;
+    return rating > 3;
   }
 
   private static final String[] PACKAGE_NAMES = {
