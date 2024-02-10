@@ -79,15 +79,23 @@ public interface ViewProvider extends InvalidateDelegate, LayoutDelegate, Invali
   default void invalidate () {
     performWithViews(View::invalidate);
   }
+
+  @SuppressWarnings("deprecation")
   default void invalidate (int left, int top, int right, int bottom) {
-    performWithViews(view ->
-      view.invalidate(left, top, right, bottom)
-    );
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      invalidate();
+    } else {
+      performWithViews(view -> view.invalidate(left, top, right, bottom));
+    }
   }
+
+  @SuppressWarnings("deprecation")
   default void invalidate (Rect dirty) {
-    performWithViews(view ->
-      view.invalidate(dirty)
-    );
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      performWithViews(view -> view.invalidate(dirty));
+    } else {
+      invalidate();
+    }
   }
 
   default void invalidateOutline (boolean invalidate) {
@@ -109,13 +117,19 @@ public interface ViewProvider extends InvalidateDelegate, LayoutDelegate, Invali
       }
     });
   }
+
+  @SuppressWarnings("deprecation")
   default void invalidateParent (int left, int top, int right, int bottom) {
-    performWithViews(view -> {
-      ViewParent parent = view.getParent();
-      if (parent instanceof View) {
-        ((View) parent).invalidate(left, top, right, bottom);
-      }
-    });
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      invalidateParent();
+    } else {
+      performWithViews(view -> {
+        ViewParent parent = view.getParent();
+        if (parent instanceof View) {
+          ((View) parent).invalidate(left, top, right, bottom);
+        }
+      });
+    }
   }
 
   default void performClickSoundFeedback () {

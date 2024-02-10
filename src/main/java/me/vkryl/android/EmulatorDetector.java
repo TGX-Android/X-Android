@@ -253,6 +253,7 @@ class EmulatorDetector {
     "15555215578", "15555215580", "15555215582", "15555215584"
   };
 
+  @SuppressWarnings("deprecation")
   private static boolean testPhoneNumber (TelephonyManager telephonyManager) {
     //noinspection MissingPermission,HardwareIds
     String phoneNumber = telephonyManager.getLine1Number();
@@ -265,6 +266,7 @@ class EmulatorDetector {
     "012345678912345"
   };
 
+  @SuppressWarnings("deprecation")
   private static boolean testDeviceId (TelephonyManager telephonyManager) {
     //noinspection MissingPermission,HardwareIds
     String deviceId = telephonyManager.getDeviceId();

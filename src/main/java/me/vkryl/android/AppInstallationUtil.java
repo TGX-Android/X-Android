@@ -113,6 +113,7 @@ public class AppInstallationUtil {
   }
 
   @Nullable
+  @SuppressWarnings("deprecation")
   public static String getInstallerPackageName (Context context) {
     final String packageName = context.getPackageName();
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

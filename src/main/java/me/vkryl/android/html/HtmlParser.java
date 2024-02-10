@@ -43,6 +43,7 @@ public class HtmlParser {
 
   private static final String ROOT_TAG_NAME = "tg-unsupported";
 
+  @SuppressWarnings("deprecation")
   public static CharSequence fromHtml (String htmlText, @Nullable Html.ImageGetter imageGetter, @Nullable TagHandler handler) {
     Html.TagHandler tagHandler;
     if (handler != null) {
@@ -60,7 +61,6 @@ public class HtmlParser {
         tagHandler
       );
     } else {
-      //noinspection deprecation
       return Html.fromHtml(
         htmlText,
         imageGetter,

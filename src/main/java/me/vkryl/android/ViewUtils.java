@@ -34,12 +34,12 @@ public final class ViewUtils {
     }
   }
 
+  @SuppressWarnings("deprecation")
   public static void setBackground (View view, Drawable drawable) {
     if (view != null) {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
         view.setBackground(drawable);
       } else {
-        //noinspection deprecation
         view.setBackgroundDrawable(drawable);
       }
     }
@@ -71,9 +71,15 @@ public final class ViewUtils {
     view.getViewTreeObserver().addOnPreDrawListener(preDrawListener);
   }
 
+  @SuppressWarnings("deprecation")
   public static void hapticVibrate (View view, boolean isForce, boolean ignoreSetting) {
     if (view != null) {
-      view.performHapticFeedback(isForce ? HapticFeedbackConstants.LONG_PRESS : HapticFeedbackConstants.KEYBOARD_TAP, ignoreSetting ? HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING : 0);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ignoreSetting) {
+        // TODO[sdk]: replacement for HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING
+      }
+      int feedbackConstant = isForce ? HapticFeedbackConstants.LONG_PRESS : HapticFeedbackConstants.KEYBOARD_TAP;
+      int flags = ignoreSetting ? HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING : 0;
+      view.performHapticFeedback(feedbackConstant, flags);
     }
   }
 

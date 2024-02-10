@@ -35,6 +35,7 @@ public final class DeviceUtils {
     return EmulatorDetector.runTests(context, allowUnsafe);
   }
 
+  @SuppressWarnings("deprecation")
   public static boolean isApplicationInstalled (Context context, String packageName, boolean allowPastInstallations) {
     try {
       int flags = 0;
