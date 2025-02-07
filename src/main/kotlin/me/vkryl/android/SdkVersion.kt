@@ -47,6 +47,7 @@ import android.os.Build
     Build.VERSION_CODES.S_V2 -> "12L"
     Build.VERSION_CODES.TIRAMISU -> "13"
     Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> "14"
+    Build.VERSION_CODES.VANILLA_ICE_CREAM -> "15"
     Build.VERSION_CODES.CUR_DEVELOPMENT -> "Magic Version"
     else -> "${14  + (apiLevel - Build.VERSION_CODES.UPSIDE_DOWN_CAKE)}"
   }
@@ -78,6 +79,7 @@ fun getPrettyVersionCode (apiLevel: Int): String {
     Build.VERSION_CODES.S_V2 -> "12L"
     Build.VERSION_CODES.TIRAMISU -> "13"
     Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> "14"
+    Build.VERSION_CODES.VANILLA_ICE_CREAM -> "15"
     Build.VERSION_CODES.CUR_DEVELOPMENT -> "Magic Version"
     else -> "${14  + (apiLevel - Build.VERSION_CODES.UPSIDE_DOWN_CAKE)}"
   }
