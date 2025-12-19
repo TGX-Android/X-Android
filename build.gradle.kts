@@ -1,3 +1,5 @@
+import tgx.gradle.flavorImplementation
+
 /*
  * This file is a part of X-Android
  * Copyright © Vyacheslav Krylov (slavone@protonmail.ch) 2014
@@ -16,13 +18,17 @@
  */
 
 plugins {
-    id("com.android.library")
-    id("module-plugin")
+  id(libs.plugins.android.library.get().pluginId)
+  alias(libs.plugins.kotlin.android)
+  id("tgx-module")
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:${LibraryVersions.ANDROIDX_CORE}")
-    implementation(project(":vkryl:core"))
+  flavorImplementation(
+    libs.androidx.core.ktx.legacy,
+    libs.androidx.core.ktx.latest
+  )
+  implementation(project(":vkryl:core"))
 }
 
 android {
