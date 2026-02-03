@@ -2,7 +2,6 @@ import tgx.gradle.flavorImplementation
 
 plugins {
   id(libs.plugins.android.library.get().pluginId)
-  alias(libs.plugins.kotlin.android)
   id("tgx-module")
 }
 
