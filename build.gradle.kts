@@ -17,4 +17,8 @@ dependencies {
 
 android {
   namespace = "me.vkryl.android"
+
+  lint {
+    disable += "ObsoleteSdkInt"
+  }
 }
