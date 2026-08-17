@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import me.vkryl.core.ArrayUtils;
 import me.vkryl.core.BitwiseUtils;
@@ -201,9 +202,8 @@ class EmulatorDetector {
     if (StringUtils.isEmpty(renderer)) {
       return false;
     }
-    renderer = renderer.toLowerCase();
     for (String knownRenderer : OPENGL_RENDERERS) {
-      if (renderer.toLowerCase().contains(knownRenderer)) {
+      if (StringUtils.containsIgnoreCase(renderer, knownRenderer)) {
         return true;
       }
     }
@@ -266,11 +266,14 @@ class EmulatorDetector {
     "012345678912345"
   };
 
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings({
+    "deprecation",
+    "HardwareIds",
+    "MissingPermission"
+  })
   private static boolean testDeviceId (TelephonyManager telephonyManager) {
-    //noinspection MissingPermission,HardwareIds
     String deviceId = telephonyManager.getDeviceId();
-    return !StringUtils.isEmpty(deviceId) && ArrayUtils.contains(DEVICE_IDS, deviceId.toLowerCase());
+    return !StringUtils.isEmpty(deviceId) && ArrayUtils.contains(DEVICE_IDS, deviceId.toLowerCase(Locale.ROOT));
   }
 
   private static final String[] SUBSCRIBER_IDS = {
@@ -515,7 +518,7 @@ class EmulatorDetector {
     if (deviceNames != null && !deviceNames.isEmpty()) {
       for (String deviceName : deviceNames) {
         for (String restrictedDeviceName : RESTRICTED_DEVICES) {
-          if (deviceName.toLowerCase().contains(restrictedDeviceName)) {
+          if (StringUtils.containsIgnoreCase(deviceName, restrictedDeviceName)) {
             return true;
           }
         }

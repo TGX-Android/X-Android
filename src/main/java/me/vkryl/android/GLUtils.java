@@ -17,7 +17,10 @@
 
 package me.vkryl.android;
 
+import android.os.Build;
+
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -27,6 +30,7 @@ import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
 import javax.microedition.khronos.egl.EGLSurface;
 
+@RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
 /*package-private*/ class GLUtils {
 
   public interface DisplayCallback {
