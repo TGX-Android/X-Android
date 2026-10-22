@@ -15,30 +15,104 @@
  * limitations under the License.
  */
 
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package me.vkryl.android.animatorx
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.TimeInterpolator
+import android.animation.ValueAnimator
+import android.os.Build
 
-class FloatAnimator : BaseAnimator<Float> {
+fun interface FloatAnimatorListener {
+  fun onValueChange(newValue: Float)
+  fun onValueChangeFinished(finalValue: Float, byAnimationEnd: Boolean) { }
+}
+
+class FloatAnimator @JvmOverloads constructor(
+  val duration: Long,
+  val interpolator: TimeInterpolator,
+  initialValue: Float = DEFAULT_INITIAL_VALUE,
+  private val listener: FloatAnimatorListener
+) {
   companion object {
     const val DEFAULT_INITIAL_VALUE = 0.0f
   }
 
-  constructor(
-    duration: Long,
-    interpolator: TimeInterpolator,
-    initialValue: Float = DEFAULT_INITIAL_VALUE,
-    onAnimationsFinished: AnimatorFinishListener<Float>? = null,
-    onApplyValue: AnimatorUpdateListener<Float>
-  ) : super(duration, interpolator, initialValue, onAnimationsFinished, onApplyValue)
+  var value: Float = initialValue
+    private set
+  private var fromValue: Float = initialValue
+  private var toValue: Float = initialValue
 
-  @JvmOverloads constructor(
-    duration: Long,
-    interpolator: TimeInterpolator,
-    initialValue: Float = DEFAULT_INITIAL_VALUE,
-    listener: AnimatorListener<Float>
-  ) : super(duration, interpolator, initialValue, listener)
+  val finalValue: Float
+    get() = if (isAnimating) toValue else value
+  var forcedValue: Float
+    get() = value
+    set(newValue) = changeValue(newValue, false)
+  var animatedValue: Float
+    get() = value
+    set(newValue) = changeValue(newValue, true)
 
-  override fun interpolate(fromValue: Float, toValue: Float, fraction: Float) =
-    fromValue + (toValue - fromValue) * fraction
+  val isAnimating: Boolean
+    get() = animator != null
+  private var animator: ValueAnimator? = null
+
+  fun stopAnimation(): Boolean {
+    return animator?.let {
+      it.cancel()
+      animator = null
+      true
+    } ?: false
+  }
+
+  @JvmOverloads
+  fun changeValue(newValue: Float, animated: Boolean = true) {
+    if (animated && isAnimating && toValue == newValue) {
+      return
+    }
+    stopAnimation()
+    changeValue(value, newValue, animated)
+  }
+
+  internal fun changeValue(fromValue: Float, toValue: Float, animated: Boolean) {
+    value = fromValue
+    this.fromValue = fromValue
+    this.toValue = toValue
+    if (!animated || !startAnimation()) {
+      applyValue(toValue)
+      listener.onValueChangeFinished(toValue, false)
+    }
+  }
+
+  private fun startAnimation(): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !ValueAnimator.areAnimatorsEnabled()) {
+      return false
+    }
+    val animator = ValueAnimator.ofFloat(0f, 1f)
+    animator.duration = duration
+    animator.interpolator = interpolator
+    animator.addUpdateListener {
+      if (this.animator === it) {
+        applyValue(fromValue + (toValue - fromValue) * it.animatedFraction)
+      }
+    }
+    animator.addListener(object : AnimatorListenerAdapter() {
+      override fun onAnimationEnd(animation: Animator) {
+        if (this@FloatAnimator.animator === animation && stopAnimation()) {
+          listener.onValueChangeFinished(value, true)
+        }
+      }
+    })
+    this.animator = animator
+    animator.start()
+    return true
+  }
+
+  private fun applyValue(newValue: Float) {
+    if (value != newValue) {
+      value = newValue
+      listener.onValueChange(newValue)
+    }
+  }
 }

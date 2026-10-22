@@ -20,28 +20,22 @@ package me.vkryl.android.animatorx
 import android.animation.TimeInterpolator
 import android.graphics.Color
 import androidx.annotation.ColorInt
-import me.vkryl.core.fromToArgb
+import me.vkryl.core.ColorInterpolation
+import me.vkryl.core.ColorInterpolator
 
-class ArgbAnimator : BaseAnimator<Int> {
+class ArgbAnimator @JvmOverloads constructor(
+  duration: Long,
+  interpolator: TimeInterpolator,
+  @ColorInt initialValue: Int = DEFAULT_INITIAL_VALUE,
+  interpolation: ColorInterpolation = ColorInterpolation.SRGB,
+  listener: IntAnimatorListener
+) : IntAnimator(duration, interpolator, initialValue, listener) {
   companion object {
     const val DEFAULT_INITIAL_VALUE = Color.BLACK
   }
 
-  constructor(
-    duration: Long,
-    interpolator: TimeInterpolator,
-    @ColorInt initialValue: Int = DEFAULT_INITIAL_VALUE,
-    onAnimationsFinished: AnimatorFinishListener<Int>? = null,
-    onApplyValue: AnimatorUpdateListener<Int>
-  ) : super(duration, interpolator, initialValue, onAnimationsFinished, onApplyValue)
-
-  @JvmOverloads constructor(
-    duration: Long,
-    interpolator: TimeInterpolator,
-    @ColorInt initialValue: Int = DEFAULT_INITIAL_VALUE,
-    listener: AnimatorListener<Int>
-  ) : super(duration, interpolator, initialValue, listener)
+  private val colorInterpolator = ColorInterpolator(interpolation)
 
   override fun interpolate(fromValue: Int, toValue: Int, fraction: Float): Int =
-    fromToArgb(fromValue, toValue, fraction)
+    colorInterpolator.interpolate(fromValue, toValue, fraction)
 }

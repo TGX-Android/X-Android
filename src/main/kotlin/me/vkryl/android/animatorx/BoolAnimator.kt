@@ -21,37 +21,20 @@ package me.vkryl.android.animatorx
 
 import android.animation.TimeInterpolator
 
-typealias BoolAnimatorUpdateListener = (state: BoolAnimator.State, animatedValue: Float, stateChanged: Boolean, prevState: BoolAnimator.State) -> Unit
-typealias BoolAnimatorFinishListener = (finalState: BoolAnimator.State, byAnimationEnd: Boolean) -> Unit
-
-interface BoolAnimatorListener {
-  fun onAnimationUpdate(state: BoolAnimator.State, animatedValue: Float, stateChanged: Boolean, prevState: BoolAnimator.State)
-  fun onAnimationFinish(finalState: BoolAnimator.State, byAnimationEnd: Boolean) { }
+fun interface BoolAnimatorListener {
+  fun onValueChange(state: BoolAnimator.State, animatedValue: Float, stateChanged: Boolean, prevState: BoolAnimator.State)
+  fun onValueChangeFinished(finalState: BoolAnimator.State, byAnimationEnd: Boolean) { }
 }
 
-class BoolAnimator(
+class BoolAnimator @JvmOverloads constructor(
   val duration: Long,
   val interpolator: TimeInterpolator,
   initialValue: Boolean = DEFAULT_INITIAL_VALUE,
-  onAnimationsFinished: BoolAnimatorFinishListener? = null,
-  onApplyValue: BoolAnimatorUpdateListener) {
+  listener: BoolAnimatorListener
+) {
   companion object {
     const val DEFAULT_INITIAL_VALUE = false
   }
-
-  @JvmOverloads constructor(
-    duration: Long,
-    interpolator: TimeInterpolator,
-    initialValue: Boolean = DEFAULT_INITIAL_VALUE,
-    listener: BoolAnimatorListener
-  ) : this(duration, interpolator, initialValue,
-    onAnimationsFinished = { finalState, byAnimationEnd ->
-      listener.onAnimationFinish(finalState, byAnimationEnd)
-    },
-    onApplyValue = { state, animatedValue, stateChanged, prevState ->
-      listener.onAnimationUpdate(state, animatedValue, stateChanged, prevState)
-    }
-  )
 
   enum class State {
     FALSE,
@@ -71,15 +54,18 @@ class BoolAnimator(
   private val animated = FloatAnimator(
     duration, interpolator,
     initialValue = if (initialValue) 1.0f else 0.0f,
-    onAnimationsFinished = { floatValue, byAnimationEnd ->
-      val state = State.valueOf(floatValue)
-      onAnimationsFinished?.invoke(state, byAnimationEnd)
-    },
-    onApplyValue = { floatValue ->
-      val state = State.valueOf(floatValue)
-      val oldState = this.state
-      this.state = state
-      onApplyValue(state, floatValue, oldState != state, oldState)
+    listener = object : FloatAnimatorListener {
+      override fun onValueChangeFinished(finalValue: Float, byAnimationEnd: Boolean) {
+        val state = State.valueOf(finalValue)
+        listener.onValueChangeFinished(state, byAnimationEnd)
+      }
+
+      override fun onValueChange(newValue: Float) {
+        val state = State.valueOf(newValue)
+        val oldState = this@BoolAnimator.state
+        this@BoolAnimator.state = state
+        listener.onValueChange(state, newValue, oldState != state, oldState)
+      }
     }
   )
 
