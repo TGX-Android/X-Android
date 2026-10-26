@@ -83,9 +83,18 @@ public class ReplaceAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
     this.list.reset(item != null ? Collections.singletonList(item) : null, animated);
   }
 
+  public int size () {
+    return list.size();
+  }
+
+  public ListAnimator.Entry<T> getEntry (int index) {
+    return list.getEntry(index);
+  }
+
   public ListAnimator.Entry<T> singleton () {
     ListAnimator.Entry<T> singleton = null;
-    for (ListAnimator.Entry<T> entry : this.list) {
+    for (int i = 0; i < list.size(); i++) {
+      ListAnimator.Entry<T> entry = list.getEntry(i);
       if (entry.isAffectingList()) {
         if (singleton == null) {
           singleton = entry;
