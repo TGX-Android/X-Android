@@ -280,7 +280,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
 
   public void applyAnimation (float factor) {
     boolean haveChanges = metadata.applyAnimation(factor);
-    for (Entry<T> entry : entries) {
+    for (int i = 0; i < entries.size(); i++) {
+      Entry<T> entry = entries.get(i);
       haveChanges = entry.applyAnimation(factor) || haveChanges;
     }
     if (haveChanges) {
@@ -325,18 +326,19 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
   }
 
   private int indexOfItem (T item) {
-    int index = 0;
     if (item == null) {
-      for (Entry<T> entry : entries) {
-        if (entry.item == null)
+      for (int index = 0; index < entries.size(); index++) {
+        Entry<T> entry = entries.get(index);
+        if (entry == null) {
           return index;
-        index++;
+        }
       }
     } else {
-      for (Entry<T> entry : entries) {
-        if (item.equals(entry.item))
+      for (int index = 0; index < entries.size(); index++) {
+        Entry<T> entry = entries.get(index);
+        if (item.equals(entry.item)) {
           return index;
-        index++;
+        }
       }
     }
     return -1;
@@ -363,7 +365,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       }
     } else {
       if (animator == null) {
-        for (Entry<T> entry : entries) {
+        for (int i = 0; i < entries.size(); i++) {
+          Entry<T> entry = entries.get(i);
           entry.visibility.setFrom(entry.visibility.get());
           entry.position.setFrom(entry.position.get());
         }
@@ -384,10 +387,9 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
   public void measureImpl (boolean animated) {
     int totalWidth = 0, totalHeight = 0;
     int maxItemWidth = 0, maxItemHeight = 0;
-    for (Entry<T> entry : actualList) {
-      if (entry.item instanceof Measurable) {
-        Measurable measurable = (Measurable) entry.item;
-
+    for (int i = 0; i < actualList.size(); i++) {
+      Entry<T> entry = actualList.get(i);
+      if (entry.item instanceof Measurable measurable) {
         boolean isFirst = entry.index == 0;
         boolean isLast = entry.index + 1 == actualList.size();
 
@@ -427,7 +429,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
 
     boolean haveChanges = false;
     if (animated) {
-      for (Entry<T> entry : entries) {
+      for (int i = 0; i < entries.size(); i++) {
+        Entry<T> entry = entries.get(i);
         if (entry.item instanceof Animatable && ((Animatable) entry.item).hasChanges()) {
           haveChanges = true;
           break;
@@ -438,9 +441,9 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       onBeforeListChanged();
     }
 
-    for (Entry<T> entry : entries) {
-      if (entry.item instanceof Animatable) {
-        Animatable animatable = (Animatable) entry.item;
+    for (int i = 0; i < entries.size(); i++) {
+      Entry<T> entry = entries.get(i);
+      if (entry.item instanceof Animatable animatable) {
         if (animated) {
           if (animatable.hasChanges()) {
             animatable.prepareChanges();
@@ -516,7 +519,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
       if (size > 0) {
         entries.ensureCapacity(size);
         actualList.ensureCapacity(size);
-        for (T item : newItems) {
+        for (int i = 0; i < newItems.size(); i++) {
+          T item = newItems.get(i);
           Entry<T> entry = new Entry<>(item, actualList.size(), true);
           entries.add(entry);
           actualList.add(entry);
@@ -590,8 +594,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
 
       if (foundItemCount < newItems.size()) {
         entries.ensureCapacity(entries.size() + (newItems.size() - foundItemCount));
-        int index = 0;
-        for (T newItem : newItems) {
+        for (int index = 0; index < newItems.size(); index++) {
+          T newItem = newItems.get(index);
           int existingIndex = indexOfItem(newItem);
           if (existingIndex == -1) {
             if (index != entries.size()) {
@@ -607,13 +611,13 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
               resetCallback.onItemAdded(entry.item, false);
             }
           }
-          index++;
         }
       }
     } else {
       if (!foundListChanges) {
         // Triggering the removeJunk call
-        for (Entry<T> entry : entries) {
+        for (int index = 0; index < entries.size(); index++) {
+          Entry<T> entry = entries.get(index);
           if (entry.visibility.differs(0f)) {
             onBeforeListChanged();
             break;
@@ -621,7 +625,8 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
         }
       }
       if (foundListChanges) {
-        for (Entry<T> entry : entries) {
+        for (int index = 0; index < entries.size(); index++) {
+          Entry<T> entry = entries.get(index);
           if (entry.visibility.differs(0f)) {
             onBeforeListChanged();
             entry.onPrepareRemove();
