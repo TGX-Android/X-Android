@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 
 import java.util.Iterator;
 
+import me.vkryl.core.lambda.RunnableData;
 import me.vkryl.core.reference.ReferenceList;
 
 public class MultipleViewProvider implements ViewProvider {
@@ -43,7 +44,7 @@ public class MultipleViewProvider implements ViewProvider {
           invalidate();
           break;
         case ACTION_REQUEST_LAYOUT:
-          ((View) msg.obj).requestLayout();
+          requestLayout();
           break;
       }
       return true;
@@ -87,6 +88,16 @@ public class MultipleViewProvider implements ViewProvider {
   }
 
   @Override
+  public @Nullable View findAnyTarget () {
+    return views.findFirst();
+  }
+
+  @Override
+  public void performWithViews (@NonNull RunnableData<View> callback) {
+    views.forEachItem(callback);
+  }
+
+  @Override
   public void postInvalidate () {
     handler.sendMessage(handler.obtainMessage(ACTION_INVALIDATE_ALL));
   }
@@ -94,13 +105,10 @@ public class MultipleViewProvider implements ViewProvider {
   @Override
   public void requestLayout () {
     // FIXME: better thread safety
-    final boolean isBackground = Looper.myLooper() != Looper.getMainLooper();
-    for (View view : this) {
-      if (isBackground) {
-        handler.sendMessage(handler.obtainMessage(ACTION_REQUEST_LAYOUT, view));
-      } else {
-        view.requestLayout();
-      }
+    if (Looper.myLooper() != Looper.getMainLooper()) {
+      handler.sendMessage(handler.obtainMessage(ACTION_REQUEST_LAYOUT));
+    } else {
+      performWithViews(View::requestLayout);
     }
   }
 

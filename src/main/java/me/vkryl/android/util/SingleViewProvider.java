@@ -27,6 +27,8 @@ import androidx.annotation.Nullable;
 import java.util.Collections;
 import java.util.Iterator;
 
+import me.vkryl.core.lambda.RunnableData;
+
 public class SingleViewProvider implements ViewProvider {
   private @Nullable View view;
 
@@ -51,6 +53,21 @@ public class SingleViewProvider implements ViewProvider {
   @Override
   public @Nullable View findAnyTarget () {
     return view;
+  }
+
+  @Override
+  public void performWithViews (@NonNull RunnableData<View> callback) {
+    View view = findAnyTarget();
+    if (view != null) {
+      callback.runWithData(view);
+    }
+  }
+
+  @Override
+  public boolean invalidateContent (Object cause) {
+    View view = findAnyTarget();
+    return view instanceof InvalidateContentProvider &&
+      ((InvalidateContentProvider) view).invalidateContent(cause);
   }
 
   @NonNull
