@@ -329,7 +329,7 @@ public final class ListAnimator<T> implements Iterable<ListAnimator.Entry<T>> {
     if (item == null) {
       for (int index = 0; index < entries.size(); index++) {
         Entry<T> entry = entries.get(index);
-        if (entry == null) {
+        if (entry.item == null) {
           return index;
         }
       }
