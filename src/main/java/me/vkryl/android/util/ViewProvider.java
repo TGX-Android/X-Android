@@ -68,16 +68,20 @@ public interface ViewProvider extends InvalidateDelegate, LayoutDelegate, Invali
     return view != null ? view.getMeasuredHeight() : 0;
   }
 
+  RunnableData<View> CALLBACK_REQUEST_LAYOUT = View::requestLayout;
+  RunnableData<View> CALLBACK_POST_INVALIDATE = View::postInvalidate;
+  RunnableData<View> CALLBACK_INVALIDATE = View::invalidate;
+
   default void requestLayout () {
-    performWithViews(View::requestLayout);
+    performWithViews(CALLBACK_REQUEST_LAYOUT);
   }
 
   default void postInvalidate () {
-    performWithViews(View::postInvalidate);
+    performWithViews(CALLBACK_POST_INVALIDATE);
   }
 
   default void invalidate () {
-    performWithViews(View::invalidate);
+    performWithViews(CALLBACK_INVALIDATE);
   }
 
   @SuppressWarnings("deprecation")
