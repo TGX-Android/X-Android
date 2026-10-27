@@ -92,9 +92,9 @@ public interface ViewProvider extends InvalidateDelegate, LayoutDelegate, Invali
   @SuppressWarnings("deprecation")
   default void invalidate (Rect dirty) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      performWithViews(view -> view.invalidate(dirty));
-    } else {
       invalidate();
+    } else {
+      performWithViews(view -> view.invalidate(dirty));
     }
   }
 
