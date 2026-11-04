@@ -24,6 +24,7 @@ import android.text.Spanned;
 import android.view.inputmethod.BaseInputConnection;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import me.vkryl.core.StringUtils;
@@ -59,33 +60,69 @@ public class HtmlEncoder {
 
     int tagCount = 0;
     StringBuilder out = new StringBuilder();
+    List<T> openSpans = new ArrayList<>();
+    List<HtmlTag[]> openTags = new ArrayList<>();
     int next;
     for (int i = start; i < end; i = next) {
       next = text.nextSpanTransition(i, end, spanKind);
       T[] spans = text.getSpans(i, next, spanKind);
-      if (spans == null || spans.length == 0) {
-        withinStyle(out, text, i, next);
-        continue;
-      }
-      List<HtmlTag> tagsToClose = new ArrayList<>();
-      for (T span : spans) {
-        HtmlTag[] tags = spanHandler.toHtmlTag(span);
-        if (tags != null) {
-          for (HtmlTag tag : tags) {
-            tagCount++;
-            out.append(tag.openTag);
-            if (!StringUtils.isEmpty(tag.closeTag)) {
-              tagsToClose.add(tag);
-            }
+      List<T> runSpans = new ArrayList<>();
+      List<HtmlTag[]> runTags = new ArrayList<>();
+      if (spans != null && spans.length > 0) {
+        Arrays.sort(spans, (a, b) -> {
+          int byStart = Integer.compare(
+            text.getSpanStart(a),
+            text.getSpanStart(b)
+          );
+          int byEnd = Integer.compare(
+            text.getSpanEnd(b),
+            text.getSpanEnd(a)
+          );
+          return byStart != 0 ? byStart : byEnd;
+        });
+        for (T span : spans) {
+          if (text.getSpanStart(span) == text.getSpanEnd(span)) {
+            continue;
+          }
+          HtmlTag[] tags = spanHandler.toHtmlTag(span);
+          if (tags != null && tags.length > 0) {
+            runSpans.add(span);
+            runTags.add(tags);
           }
         }
       }
+      int keepCount = 0;
+      while (keepCount < openSpans.size() && keepCount < runSpans.size() &&
+        openSpans.get(keepCount) == runSpans.get(keepCount)) {
+        keepCount++;
+      }
+      closeTags(out, openSpans, openTags, keepCount);
+      for (int spanIndex = keepCount; spanIndex < runSpans.size(); spanIndex++) {
+        HtmlTag[] tags = runTags.get(spanIndex);
+        for (HtmlTag tag : tags) {
+          tagCount++;
+          out.append(tag.openTag);
+        }
+        openSpans.add(runSpans.get(spanIndex));
+        openTags.add(tags);
+      }
       withinStyle(out, text, i, next);
-      for (int tagIndex = tagsToClose.size() - 1; tagIndex >= 0; tagIndex--) {
-        out.append(tagsToClose.get(tagIndex).closeTag);
+    }
+    closeTags(out, openSpans, openTags, 0);
+    return new EncodeResult(out.toString(), tagCount);
+  }
+
+  private static <T> void closeTags (StringBuilder out, List<T> openSpans, List<HtmlTag[]> openTags,
+                                     int keepCount) {
+    for (int spanIndex = openSpans.size() - 1; spanIndex >= keepCount; spanIndex--) {
+      HtmlTag[] tags = openTags.remove(spanIndex);
+      openSpans.remove(spanIndex);
+      for (int tagIndex = tags.length - 1; tagIndex >= 0; tagIndex--) {
+        if (!StringUtils.isEmpty(tags[tagIndex].closeTag)) {
+          out.append(tags[tagIndex].closeTag);
+        }
       }
     }
-    return new EncodeResult(out.toString(), tagCount);
   }
 
   // Copy of:
