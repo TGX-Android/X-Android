@@ -139,8 +139,17 @@ public class HtmlParser {
     text.setSpan(mark, len, len, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
   }
 
+  public static <T> T getCurrent (Spanned text, Class<T> kind) {
+    int len = text.length();
+    return getSingleSpan(text, len, len, kind);
+  }
+
   private static <T> T getLast (Spanned text, Class<T> kind) {
-    T[] objs = text.getSpans(0, text.length(), kind);
+    return getSingleSpan(text, 0, text.length(), kind);
+  }
+
+  private static <T> T getSingleSpan (Spanned text, int start, int end, Class<T> kind) {
+    T[] objs = text.getSpans(start, end, kind);
     if (objs == null || objs.length == 0) {
       return null;
     } else {
